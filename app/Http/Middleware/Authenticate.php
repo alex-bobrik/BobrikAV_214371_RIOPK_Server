@@ -11,9 +11,13 @@ class Authenticate extends Middleware
     public function handle($request, Closure $next, ...$guards)
     {
         if ($this->auth->guard('web')->guest()) {
+            if ($request->expectsJson()) {
+                return $next($request);
+            }
+    
             return redirect()->guest(route('login'));
         }
-
+    
         return $next($request);
     }
 

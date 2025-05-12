@@ -10,48 +10,40 @@ use Illuminate\Validation\Rules\Password;
 
 class SettingController extends Controller
 {
-    /**
-     * Display user settings form.
-     */
     public function index()
     {
-        $user = Auth::user();
-        return view('client.settings.index', compact('user'));
+        return view('client.settings');
     }
 
-    /**
-     * Update user profile information.
-     */
-    public function updateProfile(Request $request)
-    {
-        $user = Auth::user();
-
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
-        ]);
-
-        // $user->update($validated);
-
-        return redirect()->route('client.settings')
-            ->with('success', 'Профиль успешно обновлен');
-    }
-
-    /**
-     * Update user password.
-     */
-    public function updatePassword(Request $request)
+    public function update(Request $request)
     {
         $request->validate([
-            'current_password' => ['required', 'current_password'],
-            'password' => ['required', 'confirmed', Password::defaults()],
+            'name' => ['required', 'string', 'max:255'],
         ]);
 
-        // Auth::user()->update([
-        //     'password' => Hash::make($request->password),
-        // ]);
+        $user = Auth::user();
+        $user->name = $request->name;
+        $user->save();
 
-        return redirect()->route('client.settings')
-            ->with('success', 'Пароль успешно изменен');
+        return redirect()->route('client.settings')->with('success', 'Имя пользователя обновлено');
     }
+
+    public function updatePassword(Request $request)
+{
+    $request->validate([
+        'current_password' => ['required'],
+        'new_password' => ['required', 'string', 'min:8', 'confirmed'],
+    ]);
+
+    $user = Auth::user();
+
+    if (!Hash::check($request->current_password, $user->password)) {
+        return back()->with('password_error', 'Неверный текущий пароль');
+    }
+
+    $user->password = Hash::make($request->new_password);
+    $user->save();
+
+    return back()->with('password_success', 'Пароль успешно обновлён');
+}
 }

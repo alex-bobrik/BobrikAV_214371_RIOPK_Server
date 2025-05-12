@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Client;
 use App\Http\Controllers\Controller;
 use App\Models\Contract;
 use App\Models\Claim;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 
@@ -83,4 +84,64 @@ class ReportController extends Controller
             'total_amount' => $query->sum('amount'),
         ]);
     }
+
+    public function fetch(Request $request)
+    {
+        $request->validate([
+            'date_from' => 'required|date',
+            'date_to' => 'required|date|after_or_equal:date_from',
+            'user' => 'required|array',
+        ]);
+    
+        $user = $request->user;
+        if (!$user || !isset($user['id'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Не удалось найти пользователя или его ID'
+            ], 400);
+        }
+    
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'Пользователь не авторизован'], 401);
+        }
+    
+        $dateFrom = Carbon::parse($request->date_from)->startOfDay();
+        $dateTo = Carbon::parse($request->date_to)->endOfDay();
+    
+        $contracts = Contract::where('created_by', $user['id'])
+            ->whereBetween('start_date', [$dateFrom, $dateTo])
+            ->with('reinsurer')
+            ->get();
+    
+        $claims = Claim::whereHas('contract', function ($q) use ($user) {
+                $q->where('created_by', $user['id']);
+            })
+            ->whereBetween('filed_at', [$dateFrom, $dateTo])
+            ->with('contract.reinsurer')
+            ->get();
+    
+        $coverageByReinsurer = $contracts->groupBy(fn($c) => $c->reinsurer->name ?? 'Без перестраховщика')
+            ->map(fn($group) => $group->sum('coverage'));
+    
+        $claimsByMonth = $claims->groupBy(fn($claim) => $claim->filed_at->format('Y-m'))
+            ->map(fn($group) => $group->sum('amount'))
+            ->sortKeys();
+    
+        $report = [
+            'contracts_count' => $contracts->count(),
+            'claims_count' => $claims->count(),
+            'total_coverage' => $contracts->sum('coverage'),
+            'total_claims' => $claims->sum('amount'),
+        ];
+    
+        return response()->json([
+            'success' => true,
+            'report' => $report,
+            'charts' => [
+                'coverage_by_reinsurer' => $coverageByReinsurer,
+                'claims_by_month' => $claimsByMonth,
+            ]
+        ]);
+    }
+    
 }

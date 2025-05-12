@@ -10,15 +10,11 @@ use Carbon\Carbon;
 
 class ReportController extends Controller
 {
-    /**
-     * Display reports dashboard.
-     */
     public function index()
     {
         $user = Auth::user();
         $companyId = $user->company_id;
 
-        // Статистика по договорам
         $contractStats = [
             'total' => Contract::where('insurer_id', $companyId)->count(),
             'active' => Contract::where('insurer_id', $companyId)
@@ -29,7 +25,6 @@ class ReportController extends Controller
                 ->count(),
         ];
 
-        // Статистика по убыткам
         $claimStats = [
             'total' => Claim::whereHas('contract', fn($q) => $q->where('insurer_id', $companyId))
                 ->count(),
@@ -41,7 +36,6 @@ class ReportController extends Controller
                 ->count(),
         ];
 
-        // График договоров по месяцам
         $contractsByMonth = Contract::where('insurer_id', $companyId)
             ->selectRaw('YEAR(created_at) as year, MONTH(created_at) as month, COUNT(*) as count')
             ->groupBy('year', 'month')

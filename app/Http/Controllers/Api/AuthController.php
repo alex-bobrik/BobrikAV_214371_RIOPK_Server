@@ -19,13 +19,11 @@ class AuthController extends Controller
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
             
-            // Для API: создаем токен
             if ($request->wantsJson()) {
                 $token = $request->user()->createToken('api-token')->plainTextToken;
                 return response()->json(['token' => $token]);
             }
     
-            // Для веб-интерфейса: редирект
             return redirect()->intended('/client/dashboard');
         }
     

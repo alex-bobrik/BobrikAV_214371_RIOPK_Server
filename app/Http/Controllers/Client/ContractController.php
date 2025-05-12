@@ -11,9 +11,6 @@ use Illuminate\Validation\Rule;
 
 class ContractController extends Controller
 {
-    /**
-     * Display a listing of the contracts.
-     */
     public function index()
     {
         $contracts = Contract::with('reinsurer')
@@ -24,18 +21,12 @@ class ContractController extends Controller
         return view('client.contracts.index', compact('contracts'));
     }
 
-    /**
-     * Show the form for creating a new contract.
-     */
     public function create()
     {
         $reinsurers = Company::where('type', 'reinsurer')->get();
         return view('client.contracts.create', compact('reinsurers'));
     }
 
-    /**
-     * Store a newly created contract in storage.
-     */
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -57,9 +48,6 @@ class ContractController extends Controller
             ->with('success', 'Договор успешно создан и отправлен на рассмотрение');
     }
 
-    /**
-     * Display the specified contract.
-     */
     public function show(Contract $contract)
     {
         $this->authorize('view', $contract);
@@ -67,9 +55,6 @@ class ContractController extends Controller
         return view('client.contracts.show', compact('contract'));
     }
 
-    /**
-     * Show the form for editing the specified contract.
-     */
     public function edit(Contract $contract)
     {
         $this->authorize('update', $contract);
@@ -89,9 +74,6 @@ class ContractController extends Controller
         return view('client.contracts.edit', compact('contract', 'reinsurers', 'types'));
     }
 
-    /**
-     * Update the specified contract in storage.
-     */
     public function update(Request $request, Contract $contract)
     {
         $this->authorize('update', $contract);
@@ -116,9 +98,6 @@ class ContractController extends Controller
             ->with('success', 'Договор успешно обновлен');
     }
 
-    /**
-     * Remove the specified contract from storage.
-     */
     public function destroy(Contract $contract)
     {
         $this->authorize('delete', $contract);

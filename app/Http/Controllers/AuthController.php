@@ -16,26 +16,34 @@ class AuthController extends Controller
     {
         $credentials = $request->validate([
             'email' => 'required|email',
-            'password' => 'required',
+            'password' => 'required'
         ]);
 
         if (Auth::attempt($credentials)) {
-            $request->session()->regenerate();
+            $request->session()->put('user', Auth::user());
+
+            $request->session()->put('auth.user', Auth::user());
+
             
-            // Редирект в зависимости от роли
-            switch (Auth::user()->role) {
-                case 'admin':
-                    return redirect()->route('admin.dashboard');
-                case 'underwriter':
-                    return redirect()->route('underwriter.dashboard');
-                case 'client':
-                    return redirect()->route('client.dashboard');
-            }
+            $request->session()->regenerate();
+
+            return $this->authenticatedRedirect();
         }
 
         return back()->withErrors([
-            'email' => 'Неверные учетные данные.',
+            'email' => 'Неверные учетные данные',
         ]);
+    }
+
+    protected function authenticatedRedirect()
+    {
+        $user = Auth::user();
+        
+        return match($user->role) {
+            'admin' => redirect()->route('admin.dashboard'),
+            'underwriter' => redirect()->route('underwriter.dashboard'),
+            default => redirect()->route('client.dashboard')
+        };
     }
 
     public function logout(Request $request)

@@ -14,6 +14,7 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             CompaniesTableSeeder::class,
+            CreateReinsurerUsersSeeder::class,
             // Другие seeders...
         ]);
     }

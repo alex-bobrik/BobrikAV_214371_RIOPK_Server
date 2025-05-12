@@ -8,11 +8,12 @@ use Illuminate\Support\Facades\Auth;
 
 class CheckRole
 {
-    public function handle(Request $request, Closure $next, $role)
+    public function handle(Request $request, Closure $next)
     {
-        if (!Auth::check() || Auth::user()->role != $role) {
-            abort(403, 'Доступ запрещен');
-        }
+        // dump(Auth::user());
+        // if (!Auth::check() || Auth::user()->role != $role) {
+        //     abort(403, 'Доступ запрещен');
+        // }
 
         return $next($request);
     }

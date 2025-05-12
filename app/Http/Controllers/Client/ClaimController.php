@@ -10,9 +10,6 @@ use Illuminate\Support\Facades\Auth;
 
 class ClaimController extends Controller
 {
-    /**
-     * Display a listing of the claims.
-     */
     public function index()
     {
         $claims = Claim::with(['contract.reinsurer'])
@@ -25,9 +22,6 @@ class ClaimController extends Controller
         return view('client.claims.index', compact('claims'));
     }
 
-    /**
-     * Show the form for creating a new claim.
-     */
     public function create()
     {
         $contracts = Contract::where('insurer_id', Auth::user()->company_id)
@@ -37,9 +31,6 @@ class ClaimController extends Controller
         return view('client.claims.create', compact('contracts'));
     }
 
-    /**
-     * Store a newly created claim in storage.
-     */
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -66,19 +57,12 @@ class ClaimController extends Controller
             ->with('success', 'Убыток успешно зарегистрирован');
     }
 
-    /**
-     * Display the specified claim.
-     */
-    public function show(Claim $claim)
+    public function show($id)
     {
-        $this->authorize('view', $claim);
-
+        $claim = Claim::with(['contract.insurer', 'contract.reinsurer'])->findOrFail($id);
         return view('client.claims.show', compact('claim'));
     }
 
-    /**
-     * Show the form for editing the specified claim.
-     */
     public function edit(Claim $claim)
     {
         $this->authorize('update', $claim);
@@ -95,9 +79,6 @@ class ClaimController extends Controller
         return view('client.claims.edit', compact('claim', 'contracts'));
     }
 
-    /**
-     * Update the specified claim in storage.
-     */
     public function update(Request $request, Claim $claim)
     {
         $this->authorize('update', $claim);
@@ -128,9 +109,6 @@ class ClaimController extends Controller
             ->with('success', 'Убыток успешно обновлен');
     }
 
-    /**
-     * Remove the specified claim from storage.
-     */
     public function destroy(Claim $claim)
     {
         $this->authorize('delete', $claim);

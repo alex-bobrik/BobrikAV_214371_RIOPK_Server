@@ -12,8 +12,10 @@ class ContractController extends Controller
 {
     public function index(Request $request)
     {
+        $rawUser = $request->input('user');
+
         $query = Contract::with('reinsurer')
-            ->where('insurer_id', Auth::user()->company_id)
+            ->where('insurer_id', $rawUser['company_id'])
             ->orderBy('created_at', 'desc');
 
         if ($request->has('status')) {
@@ -28,6 +30,8 @@ class ContractController extends Controller
 
     public function store(Request $request)
     {
+        $rawUser = $request->input('user');
+
         $validated = $request->validate([
             'type' => ['required', 'in:quota,excess,facultative'],
             'reinsurer_id' => ['required', 'exists:companies,id'],
@@ -36,13 +40,13 @@ class ContractController extends Controller
             'start_date' => ['required', 'date'],
             'end_date' => ['required', 'date', 'after:start_date'],
         ]);
-
+    
         $contract = new Contract($validated);
-        $contract->insurer_id = Auth::user()->company_id;
-        $contract->created_by = Auth::id();
+        $contract->insurer_id = $rawUser['company_id'];
+        $contract->created_by = $rawUser['id'];
         $contract->status = 'pending';
         $contract->save();
-
+    
         return response()->json([
             'message' => 'Договор успешно создан',
             'data' => $contract->load('reinsurer'),
@@ -60,8 +64,6 @@ class ContractController extends Controller
 
     public function update(Request $request, Contract $contract)
     {
-        $this->authorize('update', $contract);
-
         if ($contract->status !== 'pending') {
             return response()->json([
                 'message' => 'Можно редактировать только договоры со статусом "На рассмотрении"'

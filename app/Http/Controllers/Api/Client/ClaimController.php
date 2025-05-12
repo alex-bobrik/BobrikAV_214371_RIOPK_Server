@@ -32,13 +32,18 @@ class ClaimController extends Controller
 
     public function store(Request $request)
     {
+        $rawUser = $request->input('user');
+
         $validated = $request->validate([
+            'user' => ['required', 'array'],
+            'user.id' => ['required', 'integer', 'exists:users,id'],
+            'user.company_id' => ['required', 'integer'],
             'contract_id' => [
                 'required',
                 'exists:contracts,id',
-                function ($attr, $value, $fail) {
+                function ($attr, $value, $fail) use ($rawUser) {
                     $contract = Contract::find($value);
-                    if ($contract && $contract->insurer_id !== Auth::user()->company_id) {
+                    if ($contract && (!isset($rawUser['company_id']) || $contract->insurer_id !== $rawUser['company_id'])) {
                         $fail('Неверный договор');
                     }
                 },
@@ -47,9 +52,15 @@ class ClaimController extends Controller
             'description' => ['required', 'string', 'max:2000'],
         ]);
 
-        $claim = new Claim($validated);
-        $claim->filed_at = now();
-        $claim->status = 'pending';
+        $claim = new Claim([
+            'contract_id' => $validated['contract_id'],
+            'amount' => $validated['amount'],
+            'description' => $validated['description'],
+            'user_id' => $validated['user']['id'],
+            'filed_at' => now(),
+            'status' => 'pending',
+        ]);
+
         $claim->save();
 
         return response()->json([
@@ -69,35 +80,36 @@ class ClaimController extends Controller
 
     public function update(Request $request, Claim $claim)
     {
-        $this->authorize('update', $claim);
-
-        if ($claim->status !== 'pending') {
-            return response()->json([
-                'message' => 'Можно редактировать только убытки со статусом "На рассмотрении"'
-            ], 403);
-        }
-
         $validated = $request->validate([
+            'user' => ['required', 'array'],
+            'user.id' => ['required', 'integer', 'exists:users,id'],
+            'user.company_id' => ['required', 'integer'],
             'contract_id' => [
-                'sometimes',
+                'required',
                 'exists:contracts,id',
-                function ($attr, $value, $fail) {
+                function ($attr, $value, $fail) use ($request) {
                     $contract = Contract::find($value);
-                    if ($contract && $contract->insurer_id !== Auth::user()->company_id) {
+                    $userCompanyId = $request->input('user.company_id');
+                    if ($contract && $contract->insurer_id !== $userCompanyId) {
                         $fail('Неверный договор');
                     }
                 },
             ],
-            'amount' => ['sometimes', 'numeric', 'min:0'],
-            'description' => ['sometimes', 'string', 'max:2000'],
+            'amount' => ['required', 'numeric', 'min:0'],
+            'description' => ['required', 'string', 'max:2000'],
         ]);
 
-        $claim->update($validated);
+        $claim->update([
+            'contract_id' => $validated['contract_id'],
+            'amount' => $validated['amount'],
+            'description' => $validated['description'],
+            'user_id' => $validated['user']['id'],
+        ]);
 
         return response()->json([
             'message' => 'Убыток обновлен',
             'data' => $claim->load('contract.reinsurer'),
-        ]);
+        ], 200);
     }
 
     public function destroy(Claim $claim)
