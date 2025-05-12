@@ -10,6 +10,37 @@ use Illuminate\Support\Facades\Auth;
 
 class ContractController extends Controller
 {
+    /**
+     * @OA\Get(
+     *     path="/api/v1/contracts",
+     *     summary="Get a list of contracts",
+     *     tags={"Contracts"},
+     *     @OA\Parameter(
+     *         name="status",
+     *         in="query",
+     *         description="Filter by contract status",
+     *         required=false,
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="A list of contracts",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="array",
+     *                 @OA\Items(ref="#/components/schemas/Contract")
+     *             ),
+     *             @OA\Property(
+     *                 property="reinsurers",
+     *                 type="array",
+     *                 @OA\Items(ref="#/components/schemas/Company")
+     *             )
+     *         )
+     *     )
+     * )
+     */
     public function index(Request $request)
     {
         $rawUser = $request->input('user');
@@ -28,6 +59,24 @@ class ContractController extends Controller
         ]);
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/v1/contracts",
+     *     summary="Создать новый договор",
+     *     tags={"Contracts"},
+     *     @OA\Parameter(name="type", in="query", required=true, @OA\Schema(type="string", enum={"quota", "excess", "facultative"})),
+     *     @OA\Parameter(name="reinsurer_id", in="query", required=true, @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="premium", in="query", required=true, @OA\Schema(type="number", format="float")),
+     *     @OA\Parameter(name="coverage", in="query", required=true, @OA\Schema(type="number", format="float")),
+     *     @OA\Parameter(name="start_date", in="query", required=true, @OA\Schema(type="string", format="date")),
+     *     @OA\Parameter(name="end_date", in="query", required=true, @OA\Schema(type="string", format="date")),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Договор успешно создан",
+     *         @OA\JsonContent(ref="#/components/schemas/Contract")
+     *     )
+     * )
+     */
     public function store(Request $request)
     {
         $rawUser = $request->input('user');
@@ -53,6 +102,24 @@ class ContractController extends Controller
         ], 201);
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/v1/contracts/{contract}",
+     *     summary="Get a specific contract",
+     *     tags={"Contracts"},
+     *     @OA\Parameter(
+     *         name="contract",
+     *         in="path",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Contract details",
+     *         @OA\JsonContent(ref="#/components/schemas/Contract")
+     *     )
+     * )
+     */
     public function show(Contract $contract)
     {
         $this->authorize('view', $contract);
@@ -62,6 +129,25 @@ class ContractController extends Controller
         ]);
     }
 
+    /**
+     * @OA\Put(
+     *     path="/api/v1/contracts/{contract}",
+     *     summary="Обновить договор",
+     *     tags={"Contracts"},
+     *     @OA\Parameter(name="contract", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="type", in="query", required=false, @OA\Schema(type="string", enum={"quota", "excess", "facultative"})),
+     *     @OA\Parameter(name="reinsurer_id", in="query", required=false, @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="premium", in="query", required=false, @OA\Schema(type="number", format="float")),
+     *     @OA\Parameter(name="coverage", in="query", required=false, @OA\Schema(type="number", format="float")),
+     *     @OA\Parameter(name="start_date", in="query", required=false, @OA\Schema(type="string", format="date")),
+     *     @OA\Parameter(name="end_date", in="query", required=false, @OA\Schema(type="string", format="date")),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Договор обновлен",
+     *         @OA\JsonContent(ref="#/components/schemas/Contract")
+     *     )
+     * )
+     */
     public function update(Request $request, Contract $contract)
     {
         if ($contract->status !== 'pending') {
@@ -87,6 +173,27 @@ class ContractController extends Controller
         ]);
     }
 
+    /**
+     * @OA\Delete(
+     *     path="/api/v1/contracts/{contract}",
+     *     summary="Delete a contract",
+     *     tags={"Contracts"},
+     *     @OA\Parameter(
+     *         name="contract",
+     *         in="path",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Contract deleted successfully",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string")
+     *         )
+     *     )
+     * )
+     */
     public function destroy(Contract $contract)
     {
         $this->authorize('delete', $contract);
@@ -104,6 +211,23 @@ class ContractController extends Controller
         ]);
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/v1/contracts/stats",
+     *     summary="Get contract statistics",
+     *     tags={"Contracts"},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Contract statistics",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="active", type="integer"),
+     *             @OA\Property(property="by_type", type="object"),
+     *             @OA\Property(property="coverage", type="number", format="float")
+     *         )
+     *     )
+     * )
+     */
     public function stats()
     {
         $companyId = Auth::user()->company_id;

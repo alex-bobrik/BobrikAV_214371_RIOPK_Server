@@ -11,6 +11,30 @@ use Illuminate\Http\Request;
 
 class ReportController extends Controller
 {
+    /**
+     * @OA\Get(
+     *     path="/api/v1/reports/contracts",
+     *     summary="Fetch contract statistics",
+     *     tags={"Reports"},
+     *     @OA\Parameter(
+     *         name="period",
+     *         in="query",
+     *         description="Filter by period",
+     *         required=false,
+     *         @OA\Schema(type="string", enum={"month", "quarter", "year"})
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Contract statistics grouped by type, status, and month",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="by_type", type="object"),
+     *             @OA\Property(property="by_status", type="object"),
+     *             @OA\Property(property="by_month", type="array", @OA\Items(type="object", @OA\Property(property="month", type="string"), @OA\Property(property="count", type="integer")))
+     *         )
+     *     )
+     * )
+     */
     public function contracts(Request $request)
     {
         $query = Contract::where('insurer_id', Auth::user()->company_id);
@@ -48,6 +72,30 @@ class ReportController extends Controller
         ]);
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/v1/reports/claims",
+     *     summary="Fetch claim statistics",
+     *     tags={"Reports"},
+     *     @OA\Parameter(
+     *         name="period",
+     *         in="query",
+     *         description="Filter by period",
+     *         required=false,
+     *         @OA\Schema(type="string", enum={"month", "quarter", "year"})
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Claim statistics grouped by status, month, and total amount",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="by_status", type="object"),
+     *             @OA\Property(property="by_month", type="array", @OA\Items(type="object", @OA\Property(property="month", type="string"), @OA\Property(property="count", type="integer"))),
+     *             @OA\Property(property="total_amount", type="number", format="float")
+     *         )
+     *     )
+     * )
+     */
     public function claims(Request $request)
     {
         $query = Claim::whereHas('contract', function($q) {
@@ -84,6 +132,7 @@ class ReportController extends Controller
             'total_amount' => $query->sum('amount'),
         ]);
     }
+
 
     public function fetch(Request $request)
     {
