@@ -10,6 +10,7 @@ use App\Models\Payment;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
+/* @deprecated */
 class DashboardController extends Controller
 {
     public function index()

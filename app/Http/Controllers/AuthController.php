@@ -40,9 +40,12 @@ class AuthController extends Controller
         $user = Auth::user();
         
         return match($user->role) {
-            'admin' => redirect()->route('admin.dashboard'),
-            'underwriter' => redirect()->route('underwriter.dashboard'),
-            default => redirect()->route('client.dashboard')
+            'admin' => redirect()->route('admin.users.index'),
+            'underwriter' => redirect()->route('underwriter.contracts.incoming'),
+            'specialist' => redirect()->route('specialist.claims.index'),
+            'owner' => redirect()->route('owner.payemnts.index'),
+
+            default => redirect()->route('login')
         };
     }
 

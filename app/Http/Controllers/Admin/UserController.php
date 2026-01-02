@@ -11,13 +11,11 @@ use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
-public function index(Request $request)
+    public function index(Request $request)
     {
-        // Получаем всех пользователей, кроме текущего админа
         $query = User::where('id', '!=', auth()->id())
                      ->with('company');
         
-        // Поиск
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
@@ -29,17 +27,14 @@ public function index(Request $request)
             });
         }
         
-        // Фильтр по статусу
         if ($request->filled('status')) {
             $query->where('is_active', $request->status === 'active');
         }
         
-        // Фильтр по роли
         if ($request->filled('role')) {
             $query->where('role', $request->role);
         }
         
-        // Сортировка
         switch ($request->get('sort', 'created_at_desc')) {
             case 'created_at_asc':
                 $query->orderBy('created_at', 'asc');
@@ -62,7 +57,6 @@ public function index(Request $request)
         
         $users = $query->paginate(20);
         
-        // Статистика
         $activeCount = User::where('id', '!=', auth()->id())
                           ->where('is_active', true)
                           ->count();
@@ -70,9 +64,8 @@ public function index(Request $request)
                             ->where('is_active', false)
                             ->count();
         
-        // Для формы создания пользователя
         $companies = Company::where('is_active', true)->orderBy('name')->get();
-        $roles = ['manager' => 'Менеджер', 'user' => 'Пользователь']; // Исключаем админа
+        $roles = ['manager' => 'Менеджер', 'user' => 'Пользователь'];
         
         return view('admin.users.index', compact('users', 'activeCount', 'inactiveCount', 'companies', 'roles'));
     }
@@ -113,7 +106,6 @@ public function index(Request $request)
     
     public function update(Request $request, User $user)
     {
-        // Нельзя редактировать текущего админа
         if ($user->id === auth()->id()) {
             return response()->json([
                 'success' => false,
@@ -139,7 +131,6 @@ public function index(Request $request)
                 'is_active' => $validated['is_active'],
             ];
             
-            // Обновляем пароль только если он был указан
             if (!empty($validated['password'])) {
                 $updateData['password'] = Hash::make($validated['password']);
             }
@@ -161,7 +152,6 @@ public function index(Request $request)
     
     public function toggleStatus(User $user)
     {
-        // Нельзя заблокировать текущего админа
         if ($user->id === auth()->id()) {
             return response()->json([
                 'success' => false,

@@ -10,22 +10,19 @@ use Illuminate\Validation\Rule;
 
 class CompanyController extends Controller
 {
-public function index(Request $request)
+    public function index(Request $request)
     {
         $query = Company::query();
         
-        // Поиск по названию
         if ($request->filled('search')) {
             $query->where('name', 'like', '%' . $request->search . '%')
                   ->orWhere('email', 'like', '%' . $request->search . '%');
         }
         
-        // Фильтр по статусу
         if ($request->filled('status')) {
             $query->where('is_active', $request->status === 'active');
         }
         
-        // Сортировка
         $sortBy = $request->get('sort_by', 'created_at');
         $sortOrder = $request->get('sort_order', 'desc');
         $query->orderBy($sortBy, $sortOrder);
@@ -59,17 +56,15 @@ public function index(Request $request)
     }
     
     public function toggleStatus(Company $company)
-    {    
+    {
         try {
             $newStatus = !$company->is_active;
             
-            // Обновляем статус компании
             $company->update(['is_active' => $newStatus]);
             
-            // Обновляем статусы всех пользователей компании
             User::where('company_id', $company->id)
                 ->update(['is_active' => $newStatus]);
-                    
+            
             return response()->json([
                 'success' => true,
                 'message' => $newStatus 
@@ -85,6 +80,4 @@ public function index(Request $request)
             ], 500);
         }
     }
-
-
 }
