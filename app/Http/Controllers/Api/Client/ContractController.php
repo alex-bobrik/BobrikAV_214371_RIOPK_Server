@@ -121,9 +121,7 @@ class ContractController extends Controller
      * )
      */
     public function show(Contract $contract)
-    {
-        $this->authorize('view', $contract);
-        
+    {        
         return response()->json([
             'data' => $contract->load(['reinsurer', 'payments', 'claims']),
         ]);

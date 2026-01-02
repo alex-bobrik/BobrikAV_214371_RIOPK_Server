@@ -19,7 +19,7 @@ class ClaimController extends Controller
             ->orderBy('filed_at', 'desc')
             ->paginate(10);
 
-        return view('client.claims.index', compact('claims'));
+        return view('specialist.claims.index', compact('claims'));
     }
 
     public function create()
@@ -28,7 +28,7 @@ class ClaimController extends Controller
             ->where('status', 'active')
             ->get();
 
-        return view('client.claims.create', compact('contracts'));
+        return view('specialist.claims.create', compact('contracts'));
     }
 
     public function store(Request $request)
@@ -53,14 +53,14 @@ class ClaimController extends Controller
         $claim->status = 'pending';
         $claim->save();
 
-        return redirect()->route('client.claims.index')
+        return redirect()->route('specialist.claims.index')
             ->with('success', 'Убыток успешно зарегистрирован');
     }
 
     public function show($id)
     {
         $claim = Claim::with(['contract.insurer', 'contract.reinsurer'])->findOrFail($id);
-        return view('client.claims.show', compact('claim'));
+        return view('specialist.claims.show', compact('claim'));
     }
 
     public function edit(Claim $claim)
@@ -76,7 +76,7 @@ class ClaimController extends Controller
             ->where('status', 'active')
             ->get();
 
-        return view('client.claims.edit', compact('claim', 'contracts'));
+        return view('specialist.claims.edit', compact('claim', 'contracts'));
     }
 
     public function update(Request $request, Claim $claim)
@@ -105,7 +105,7 @@ class ClaimController extends Controller
 
         $claim->update($validated);
 
-        return redirect()->route('client.claims.index')
+        return redirect()->route('specialist.claims.index')
             ->with('success', 'Убыток успешно обновлен');
     }
 
@@ -120,7 +120,7 @@ class ClaimController extends Controller
 
         $claim->delete();
 
-        return redirect()->route('client.claims.index')
+        return redirect()->route('specialist.claims.index')
             ->with('success', 'Убыток успешно удален');
     }
 }

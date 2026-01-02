@@ -11,8 +11,12 @@ return new class extends Migration
         Schema::create('companies', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->enum('type', ['insurer', 'reinsurer']);
-            $table->string('country', 100);
+            $table->string('address');
+            $table->string('phone');
+            $table->string('email');
+            $table->string('inn');
+            $table->string('description');
+            $table->boolean('is_active');
             $table->timestamps();
         });
     }

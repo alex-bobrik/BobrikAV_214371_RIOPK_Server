@@ -10,11 +10,14 @@ return new class extends Migration
     {
         Schema::create('payments', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('contract_id')->constrained('contracts');
+            $table->foreignId('claim_id')->constrained('claims');
+            $table->foreignId('contract_id')->constrained('contracts');   
+            $table->foreignId('created_by')->constrained('users');
             $table->decimal('amount', 15, 2);
-            $table->enum('type', ['premium', 'claim']);
-            $table->enum('status', ['paid', 'pending', 'failed']);
-            $table->date('payment_date');
+            $table->enum('status', ['paid', 'pending']);
+            $table->string('type');
+            $table->string('description');
+
             $table->timestamps();
         });
     }

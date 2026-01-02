@@ -27,16 +27,20 @@ class Contract extends Model
 {
     use HasFactory;
 
+    public const STATUS = [
+        'active',
+        'denied',
+        'need_details',
+        'new'
+    ];
+
     protected $fillable = [
-        'type',
         'insurer_id',
         'reinsurer_id',
-        'premium',
-        'coverage',
-        'start_date',
-        'end_date',
         'status',
-        'created_by',
+        'terms',
+        'number',
+        'coverage'
     ];
 
     public function insurer()
@@ -49,11 +53,6 @@ class Contract extends Model
         return $this->belongsTo(Company::class, 'reinsurer_id');
     }
 
-    public function creator()
-    {
-        return $this->belongsTo(User::class, 'created_by');
-    }
-
     public function payments()
     {
         return $this->hasMany(Payment::class);
@@ -62,5 +61,22 @@ class Contract extends Model
     public function claims()
     {
         return $this->hasMany(Claim::class);
+    }
+
+public function contractMessages()
+    {
+        return $this->hasMany(ContractMessage::class);
+    }
+    
+    // Добавьте этот геттер для обратной совместимости
+    public function getContractMessagesAttribute()
+    {
+        // Если связь уже загружена, возвращаем ее
+        if ($this->relationLoaded('contractMessages')) {
+            return $this->getRelation('contractMessages');
+        }
+        
+        // Иначе загружаем связь
+        return $this->contractMessages()->get();
     }
 }

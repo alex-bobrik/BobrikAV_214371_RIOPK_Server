@@ -5,32 +5,24 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Payment extends Model
+class ContractMessage extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'claim_id',
         'contract_id',
-        'amount',
-        'type',
-        'status',
-        'description',
-        'created_by',
+        'message',
+        'created_by'
     ];
 
-    public function contract()
+    public function attachments()
     {
-        return $this->belongsTo(Contract::class);
-    }
-
-    public function claim()
-    {
-        return $this->belongsTo(Claim::class);
+        return $this->hasMany(MessageAttachment::class);
     }
 
     public function createdBy()
     {
         return $this->belongsTo(User::class, 'created_by');
     }
+
 }

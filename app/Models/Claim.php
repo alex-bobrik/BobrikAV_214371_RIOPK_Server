@@ -27,19 +27,22 @@ class Claim extends Model
     protected $fillable = [
         'contract_id',
         'amount',
-        'description',
+        'created_by',
         'status',
-        'filed_at',
-        'resolved_at',
-    ];
-
-    protected $casts = [
-        'filed_at' => 'datetime',
-        'resolved_at' => 'datetime',
     ];
 
     public function contract()
     {
         return $this->belongsTo(Contract::class);
+    }
+
+    public function payments()
+    {
+        return $this->hasMany(Payment::class);
+    }
+
+        public function createdBy()
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
 }

@@ -11,11 +11,9 @@ return new class extends Migration
         Schema::create('claims', function (Blueprint $table) {
             $table->id();
             $table->foreignId('contract_id')->constrained('contracts');
+            $table->foreignId('created_by')->constrained('users');
             $table->decimal('amount', 15, 2);
-            $table->text('description');
-            $table->enum('status', ['pending', 'approved', 'rejected', 'paid'])->default('pending');
-            $table->dateTime('filed_at');
-            $table->dateTime('resolved_at')->nullable();
+            $table->enum('status', ['active', 'denied', 'paid'])->default('active');
             $table->timestamps();
         });
     }

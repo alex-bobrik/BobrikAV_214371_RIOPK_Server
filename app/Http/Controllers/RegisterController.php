@@ -26,8 +26,8 @@ class RegisterController extends Controller
                 'exists:companies,id',
                 function ($attribute, $value, $fail) {
                     $company = Company::find($value);
-                    if ($company && $company->type !== 'insurer') {
-                        $fail('Вы можете регистрироваться только как клиент страховой компании.');
+                    if (!$company) {
+                        $fail('Нет такой компании');
                     }
                 },
             ],

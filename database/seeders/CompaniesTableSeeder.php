@@ -11,56 +11,56 @@ class CompaniesTableSeeder extends Seeder
     {
         $companies = [
             [
+                'id' => 1,
                 'name' => 'Страховая Компания "АльфаСтрахование"',
-                'type' => 'insurer',
-                'country' => 'Россия'
+                'address' => 'Россия',
+                'phone' => '1234567',
+                'email' => 'company@com.com',
+                'inn' => 'IN1234',
+                'description' => 'company description',
+                'is_active' => true
+
             ],
             [
+                'id' => 2,
                 'name' => 'ПАО "СОГАЗ"',
-                'type' => 'insurer',
-                'country' => 'Россия'
+                'address' => 'Россия',
+                                'phone' => '1234567',
+                'email' => 'company@com.com',
+                'inn' => 'IN1234',
+                'description' => 'company description',
+                'is_active' => true
             ],
             [
+                'id' => 3,
                 'name' => 'ООО "СК "ВТБ Страхование"',
-                'type' => 'insurer',
-                'country' => 'Россия'
+                'address' => 'Россия',
+                                'phone' => '1234567',
+                'email' => 'company@com.com',
+                'inn' => 'IN1234',
+                'description' => 'company description',
+                'is_active' => true
             ],
             [
+                'id' => 4,
                 'name' => 'АО "Альянс"',
-                'type' => 'insurer',
-                'country' => 'Россия'
+                'address' => 'Россия',
+                                'phone' => '1234567',
+                'email' => 'company@com.com',
+                'inn' => 'IN1234',
+                'description' => 'company description',
+                'is_active' => true
             ],
             [
+                'id' => 5,
                 'name' => 'ПАО "Ингосстрах"',
-                'type' => 'insurer',
-                'country' => 'Россия'
+                'address' => 'Россия',
+                                'phone' => '1234567',
+                'email' => 'company@com.com',
+                'inn' => 'IN1234',
+                'description' => 'company description',
+                'is_active' => true
             ],
-            [
-                'name' => 'СК "Ренессанс Страхование"',
-                'type' => 'insurer',
-                'country' => 'Россия'
-            ],
-            [
-                'name' => 'ООО "Страховая компания "Зетта Страхование"',
-                'type' => 'insurer',
-                'country' => 'Россия'
-            ],
-            // Перестраховочные компании
-            [
-                'name' => 'ООО "СК "РГС-Ре"',
-                'type' => 'reinsurer',
-                'country' => 'Россия'
-            ],
-            [
-                'name' => 'АО "Национальная Перестраховочная Компания"',
-                'type' => 'reinsurer',
-                'country' => 'Россия'
-            ],
-            [
-                'name' => 'ООО "Перестраховочная компания "Евро-Полис"',
-                'type' => 'reinsurer',
-                'country' => 'Россия'
-            ]
         ];
 
         foreach ($companies as $company) {

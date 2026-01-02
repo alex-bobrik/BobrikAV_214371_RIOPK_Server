@@ -24,9 +24,12 @@ class Company extends Model
 
     protected $fillable = [
         'name',
-        'type',
-        'country',
-        'description',
+        'address',
+        'phone',
+        'email',
+        'inn',
+        'is_active',
+        'description'
     ];
 
     public function users()
@@ -36,11 +39,11 @@ class Company extends Model
 
     public function insurerContracts()
     {
-        return $this->hasMany(Contract::class, 'insurer_id');
+        return $this->hasMany(Contract::class, 'insurer_company_id');
     }
 
     public function reinsurerContracts()
     {
-        return $this->hasMany(Contract::class, 'reinsurer_id');
+        return $this->hasMany(Contract::class, 'reinsurer_company_id');
     }
 }
