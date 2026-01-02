@@ -15,7 +15,6 @@ class ClaimController extends Controller
 {
     public function create()
     {
-        // Получаем активные договоры текущей компании (как страховщика)
         $contracts = Contract::where('insurer_id', Auth::user()->company_id)
             ->where('status', 'active')
             ->with('reinsurer')
@@ -27,7 +26,6 @@ class ClaimController extends Controller
     
     public function store(Request $request)
     {        
-        // Получаем договор
         $contract = Contract::findOrFail($request->get('contract_id'));
         
         if ($contract->status !== 'active') {
@@ -45,7 +43,6 @@ class ClaimController extends Controller
         }
                 
         try {
-            // Создаем убыток
             $claim = Claim::create([
                 'contract_id' => $contract->id,
                 'amount' => $request->get('amount'),
@@ -54,7 +51,6 @@ class ClaimController extends Controller
                 'created_by' => Auth::id(),
             ]);
             
-            // Добавляем системное сообщение к договору
             ContractMessage::create([
                 'contract_id' => $contract->id,
                 'message' => 'Создан убыток #' . $claim->id . ' на сумму ' . number_format($request->get('amount'), 0, '', ' ') . ' BYN. ' . 
@@ -63,7 +59,6 @@ class ClaimController extends Controller
                 'is_system' => true,
             ]);
             
-            // Создаем запись о выплате перестраховщику
             if ($request->get('reinsurer_payment') > 0) {
                 Payment::create([
                     'claim_id' => $claim->id,
@@ -76,7 +71,6 @@ class ClaimController extends Controller
                 ]);
             }
             
-            // Создаем запись о нашей выплате (если есть)
             if ($request->get('our_payment') > 0) {
                 Payment::create([
                     'claim_id' => $claim->id,
@@ -89,7 +83,6 @@ class ClaimController extends Controller
                 ]);
             }
             
-            // Создаем запись о премии (если есть)
             if ($request->get('calculated_premium') > 0) {
                 Payment::create([
                     'claim_id' => $claim->id,
