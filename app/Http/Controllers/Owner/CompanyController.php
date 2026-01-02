@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Underwriter;
+namespace App\Http\Controllers\Owner;
 
 use App\Http\Controllers\Controller;
 use App\Models\Claim;
@@ -109,42 +109,7 @@ public function index(Request $request)
     $companies = $query->paginate($perPage)->appends($request->query());
     
 
-    return view('underwriter.companies.index', compact('companies'));
+    return view('owner.companies.index', compact('companies'));
 }
 
-    public function show(Claim $claim)
-    {
-        return view('underwriter.claims.show', compact('claim'));
-    }
-
-    public function approve(Claim $claim)
-    {
-        if ($claim->status !== 'pending') {
-            return back()->with('error', 'Этот убыток уже обработан.');
-        }
-
-        Payment::create([
-            'contract_id' => $claim->contract_id,
-            'amount' => $claim->amount,
-            'type' => 'claim',
-            'status' => 'pending',
-            'payment_date' => Carbon::now(),
-        ]);
-
-        $claim->update(['status' => 'approved']);
-
-
-        return redirect()->route('underwriter.claims.index')->with('success', 'Убыток принят, платёж создан.');
-    }
-
-
-    public function reject(Claim $claim)
-    {
-        if ($claim->status !== 'pending') {
-            return back()->with('error', 'Этот убыток уже обработан.');
-        }
-
-        $claim->update(['status' => 'rejected']);
-        return redirect()->route('underwriter.claims.index')->with('success', 'Убыток отклонен.');
-    }
 }

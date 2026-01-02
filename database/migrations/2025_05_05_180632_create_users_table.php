@@ -13,7 +13,8 @@ return new class extends Migration
             $table->string('name');
             $table->string('email')->unique();
             $table->string('password');
-            $table->enum('role', ['admin', 'underwriter', 'client']);
+            $table->enum('role', ['admin', 'underwriter', 'specialist', 'owner']);
+            $table->boolean('is_active');
             $table->foreignId('company_id')->constrained('companies');
             $table->timestamps();
         });

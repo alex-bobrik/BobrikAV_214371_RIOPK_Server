@@ -1,22 +1,22 @@
 <?php
 
 use App\Http\Controllers\Admin\CompanyController;
+use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Client\SettingController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Client\ClaimController;
 use App\Http\Controllers\Client\ContractController;
 use App\Http\Controllers\Underwriter\ContractController as UnderwriterContractController;
-use App\Http\Controllers\Underwriter\ClaimController as UnderwriterClaimController;
-use App\Http\Controllers\Underwriter\PaymentController as UnderwriterPaymentController;
 use App\Http\Controllers\Client\ReportController;
+use App\Http\Controllers\Owner\CompanyController as OwnerCompanyController;
 use App\Http\Controllers\RegisterController;
-use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Owner\PaymentController;
+use App\Http\Controllers\Owner\ReportController as OwnerReportController;
 use App\Http\Controllers\Specialist\ClaimController as SpecialistClaimController;
+use App\Http\Controllers\Specialist\CompanyController as SpecialistCompanyController;
 use App\Http\Controllers\Underwriter\CompanyController as UnderwriterCompanyController;
-use App\Http\Controllers\Underwriter\ContractController as ControllersUnderwriterContractController;
-use App\Http\Controllers\Underwriter\ContractController as HttpControllersUnderwriterContractController;
+use App\Models\Company;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Auth;
 use Uri\Rfc3986\Uri;
@@ -31,78 +31,100 @@ Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->na
 Route::post('/register', [RegisterController::class, 'register']);
 
 Route::middleware(['auth'])->group(function () {
-    Route::prefix('admin')->group(function () {
-        Route::get('/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('admin.dashboard');
-        Route::resource('users', App\Http\Controllers\Admin\UserController::class)->names('admin.users');
-        Route::resource('companies', CompanyController::class)->names('admin.companies');
-        Route::resource('contracts', App\Http\Controllers\Admin\ContractController::class)->names('admin.contracts');
-        Route::get('contracts/{id}', [ContractController::class, 'show'])->name('admin.contracts.show');
+    Route::prefix('admin')->name('admin.')->group(function () {
+
+        Route::get('/companies', [CompanyController::class, 'index'])->name('companies.index');
+        Route::put('/companies/{company}', [CompanyController::class, 'update'])->name('companies.update');
+        Route::post('/companies/{company}/toggle-status', [CompanyController::class, 'toggleStatus'])->name('companies.toggle-status');
+        Route::get('/companies/{company}/edit', function(Company $company) {
+            return response()->json($company);
+        });
+
+            Route::get('/users', [UserController::class, 'index'])->name('users.index');
+    Route::post('/users', [UserController::class, 'store'])->name('users.store');
+    Route::post('/users/{user}', [UserController::class, 'update'])->name('users.update');
+    Route::post('/users/{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
+
+
+
+
+        Route::get('/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
+        Route::resource('users', App\Http\Controllers\Admin\UserController::class)->names('users');
+        // Route::resource('companies', CompanyController::class)->names('admin.companies');
+        // Route::resource('contracts', App\Http\Controllers\Admin\ContractController::class)->names('admin.contracts');
+        // Route::get('contracts/{id}', [ContractController::class, 'show'])->name('admin.contracts.show');
     });
 
+    Route::prefix('owner')->name('owner.')->group(function () {
+        Route::get('/payments', [PaymentController::class, 'index'])->name('payments.index');
+        Route::put('/payments/{payment}/status', [PaymentController::class, 'updateStatus'])->name('payments.updateStatus');
+
+        Route::get('/payments/{payment}/details', [PaymentController::class, 'getDetails'])->name('payments.details');
+        Route::post('/payments/{payment}/status', [PaymentController::class, 'updateStatusAjax'])->name('payments.updateStatus.ajax');
+    
+        Route::get('/companies/list', action: [OwnerCompanyController::class, 'index'])->name('companies.index');
+
+        Route::get('/reports', action: [OwnerReportController::class, 'index'])->name(name: 'reports.index');
+                Route::get('/reports/export', action: [OwnerReportController::class, 'exportPdf'])->name(name: 'reports.export');
+
+
+
+    });
+
+
     Route::prefix('underwriter')->name('underwriter.')->group(function () {
-        Route::get('/dashboard', [\App\Http\Controllers\Underwriter\DashboardController::class, 'index'])->name('dashboard');
-
-    Route::get('/contracts/incoming', [UnderwriterContractController::class, 'incoming'])
-         ->name('contracts.incoming');
-    Route::get('/contracts/outgoing', [UnderwriterContractController::class, 'outgoing'])
-         ->name('contracts.outgoing');
-    Route::get('/contracts/outgoing/create', [UnderwriterContractController::class, 'showCreateContract'])
-         ->name('contracts.showCreate');
-    Route::post('/contracts/outgoing/store', [UnderwriterContractController::class, 'storeContract'])
-         ->name('contracts.store');
-    Route::post('/contracts/{contract}/message', [UnderwriterContractController::class, 'addMessage'])
-        ->name('contract.message.add');
-    Route::put('/contracts/{contract}/status', [UnderwriterContractController::class, 'updateStatus'])
-        ->name('contracts.update-status');
-
-
-             Route::get('/companies/list', [UnderwriterCompanyController::class, 'index'])
-         ->name('companies.index');
-
-
-
-        Route::get('/contracts', [UnderwriterContractController::class, 'index'])->name('contracts.index');
+        // Contracts
+        Route::get('/contracts/incoming', [UnderwriterContractController::class, 'incoming'])->name('contracts.incoming');
+        Route::get('/contracts/outgoing', [UnderwriterContractController::class, 'outgoing'])->name('contracts.outgoing');
+        Route::get('/contracts/outgoing/create', [UnderwriterContractController::class, 'showCreateContract'])->name('contracts.showCreate');
+        Route::post('/contracts/outgoing/store', [UnderwriterContractController::class, 'storeContract'])->name('contracts.store');
+        Route::post('/contracts/{contract}/message', [UnderwriterContractController::class, 'addMessage'])->name('contract.message.add');
+        Route::put('/contracts/{contract}/status', [UnderwriterContractController::class, 'updateStatus'])->name('contracts.update-status');
         Route::get('/contracts/{contract}', [UnderwriterContractController::class, 'show'])->name('contracts.show');
         Route::post('/contracts/{contract}/approve', [UnderwriterContractController::class, 'approve'])->name('contracts.approve');
         Route::post('/contracts/{contract}/reject', [UnderwriterContractController::class, 'reject'])->name('contracts.reject');
-
-        Route::get('/claims', [UnderwriterClaimController::class, 'index'])->name('claims.index');
-        Route::get('/claims/{claim}', [UnderwriterClaimController::class, 'show'])->name('claims.show');
-        Route::post('/claims/{claim}/approve', [UnderwriterClaimController::class, 'approve'])->name('claims.approve');
-        Route::post('/claims/{claim}/reject', [UnderwriterClaimController::class, 'reject'])->name('claims.reject');
-
-        Route::get('payments', [UnderwriterPaymentController::class, 'index'])->name('payments.index');
-        Route::get('payments/{payment}', [UnderwriterPaymentController::class, 'show'])->name('payments.show');
-        Route::post('payments/{payment}/approve', [UnderwriterPaymentController::class, 'approve'])->name('payments.approve');
-        Route::post('payments/{payment}/reject', [UnderwriterPaymentController::class, 'reject'])->name('payments.reject');
+        Route::get('/contracts/export', [UnderwriterContractController::class, 'export'])->name('contracts.export');
+        
+        // Companies
+        Route::get('/companies/list', action: [UnderwriterCompanyController::class, 'index'])->name('companies.index');
     });
 
     Route::prefix('specialist')->name('specialist.')->group(function () {
-        Route::get('/dashboard', [\App\Http\Controllers\Client\DashboardController::class, 'index'])->name('client.dashboard');
         Route::resource('contracts', \App\Http\Controllers\Client\ContractController::class);
         Route::resource('claims', \App\Http\Controllers\Client\ClaimController::class);
         Route::get('reports', [\App\Http\Controllers\Client\ReportController::class, 'index'])->name('client.reports');
         Route::get('settings', [\App\Http\Controllers\Client\SettingController::class, 'index'])->name('client.settings');
 
-
-    Route::get('/payments', [PaymentController::class, 'index'])->name('payments.index');
-    Route::put('/payments/{payment}/status', [PaymentController::class, 'updateStatus'])->name('payments.updateStatus');
-
-    Route::get('/payments/{payment}/details', [PaymentController::class, 'getDetails'])->name('payments.details');
-    Route::post('/payments/{payment}/status', [PaymentController::class, 'updateStatusAjax'])->name('payments.updateStatus.ajax');
+        Route::get('/companies/list', action: [SpecialistCompanyController::class, 'index'])->name('companies.index');
 
 
 
+        Route::get('/claims/{claim}/details', [\App\Http\Controllers\Client\ClaimController::class, 'details'])
+            ->name('claims.details');
+
+        // Route::get('/payments', [PaymentController::class, 'index'])->name('payments.index');
+        // Route::put('/payments/{payment}/status', [PaymentController::class, 'updateStatus'])->name('payments.updateStatus');
+
+        // Route::get('/payments/{payment}/details', [PaymentController::class, 'getDetails'])->name('payments.details');
+        // Route::post('/payments/{payment}/status', [PaymentController::class, 'updateStatusAjax'])->name('payments.updateStatus.ajax');
 
         Route::prefix('claims')->name('claims.')->group(function () {
-            Route::get('/', [SpecialistClaimController::class, 'index'])->name('index');
-            Route::get('/create', [SpecialistClaimController::class, 'create'])->name('create');
-            Route::post('/', [SpecialistClaimController::class, 'store'])->name('store');
-            Route::get('/{claim}', [SpecialistClaimController::class, 'show'])->name('show');
-            Route::get('/{claim}/edit', [SpecialistClaimController::class, 'edit'])->name('edit');
-            Route::put('/{claim}', [SpecialistClaimController::class, 'update'])->name('update');
-            Route::delete('/{claim}', [SpecialistClaimController::class, 'destroy'])->name('destroy');
-        
+
+        Route::get('/export', [\App\Http\Controllers\Client\ClaimController::class, 'export'])
+            ->name('export')
+            ->middleware('auth');
+
+
+
+
+        Route::get('/', [\App\Http\Controllers\Client\ClaimController::class, 'index'])->name('index');
+        Route::get('/create', [SpecialistClaimController::class, 'create'])->name('create');
+        Route::post('/', [SpecialistClaimController::class, 'store'])->name('store');
+        Route::get('/{claim}', [SpecialistClaimController::class, 'show'])->name('show');
+        Route::get('/{claim}/edit', [SpecialistClaimController::class, 'edit'])->name('edit');
+        Route::put('/{claim}', [SpecialistClaimController::class, 'update'])->name('update');
+        Route::delete('/{claim}', [SpecialistClaimController::class, 'destroy'])->name('destroy');
+            
         // Статусы убытков
         Route::put('/{claim}/status', [SpecialistClaimController::class, 'updateStatus'])->name('update-status');
     });
